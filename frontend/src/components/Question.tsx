@@ -20,7 +20,7 @@ const Question: React.FC<& QuestionComponentProps> = (props) => {
     <div className="Question-holder">
       <div className="Question">{question}</div>
       <div className="Question-status">
-        <img className="category" src={`${category}.svg`} alt={category} />
+        <img className="category" src={`${category.toLowerCase()}.svg`} alt={category} />
         <div className="difficulty">Difficulty: {difficulty}</div>
         <img src="delete.png" className="delete" onClick={() => props.questionAction('DELETE')} alt="Delete"/>
 

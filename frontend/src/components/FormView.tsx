@@ -4,12 +4,14 @@ import { RouteComponentProps } from "@reach/router"
 import '../stylesheets/FormView.css';
 
 const FormView: React.FC<RouteComponentProps> = (props) => {
-  const [state, setState] = useState({
+
+  const [categories, setCategories]= useState([] as { id: number, type: string }[])
+ 
+  const [question, setQuestion] = useState({
     question: "",
     answer: "",
     difficulty: 1,
     category: 1,
-    categories: {} as { [key: number]: string }
   })
 
   const formRef = createRef<HTMLFormElement>()
@@ -17,7 +19,7 @@ const FormView: React.FC<RouteComponentProps> = (props) => {
   useEffect(() => {
     //TODO: update request URL
     fetch(`/categories`).then(rsp => rsp.json()).then(result => {
-      setState(prev => { return {...prev, categories: result.categories } })
+      setCategories(result.categories)
       return;
     }).catch(error => {
       alert('Unable to load categories. Please try your request again')
@@ -35,7 +37,7 @@ const FormView: React.FC<RouteComponentProps> = (props) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(state),
+      body: JSON.stringify(question),
     }).then(rsp => rsp.json()).then(result => {
       formRef.current?.reset();
       return;
@@ -46,7 +48,7 @@ const FormView: React.FC<RouteComponentProps> = (props) => {
   }
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement & HTMLSelectElement>) => {
-    setState({ ...state, [event.target.name]: event.target.value })
+    setQuestion({ ...question, [event.target.name]: event.target.value })
   }
 
   return (
@@ -73,12 +75,8 @@ const FormView: React.FC<RouteComponentProps> = (props) => {
         </label>
         <label>
           Category
-            <select name="category" onChange={handleChange}>
-            {Object.keys(state.categories).map(Number).map(id => {
-              return (
-                <option key={id} value={id}>{state.categories[id]}</option>
-              )
-            })}
+          <select name="category" onChange={handleChange}>
+            {categories.map(category => <option key={category.id} value={category.id}>{category.type}</option>)}
           </select>
         </label>
         <input type="submit" className="button" value="Submit" />

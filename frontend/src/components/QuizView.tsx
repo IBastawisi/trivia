@@ -11,7 +11,7 @@ const QuizView: React.FC<RouteComponentProps> = (props) => {
     quizCategory: 0,
     previousQuestions: [] as number[],
     showAnswer: false,
-    categories: {} as { [key: number]: string },
+    categories: [] as { id: number, type: string }[],
     numCorrect: 0,
     currentQuestion: {} as questionModel,
     guess: '',
@@ -21,7 +21,7 @@ const QuizView: React.FC<RouteComponentProps> = (props) => {
   useEffect(() => {
     //TODO: update request URL
     fetch(`/categories`).then(rsp => rsp.json()).then(result => {
-      setState(prev => { return {...prev, categories: result.categories } })
+      setState(prev => { return { ...prev, categories: result.categories } })
       return;
     }).catch(error => {
       alert('Unable to load categories. Please try your request again')
@@ -32,14 +32,14 @@ const QuizView: React.FC<RouteComponentProps> = (props) => {
 
   const selectCategory = (id = 0) => {
     setState({ ...state, quizCategory: id })
-    getNextQuestion()
+    getNextQuestion(id)
   }
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setState({ ...state, [event.target.name]: event.target.value })
   }
 
-  const getNextQuestion = () => {
+  const getNextQuestion = (category_id = state.quizCategory) => {
     const previousQuestions = [...state.previousQuestions]
     if (state.currentQuestion.id) { previousQuestions.push(state.currentQuestion.id) }
 
@@ -51,10 +51,11 @@ const QuizView: React.FC<RouteComponentProps> = (props) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(state),
+      body: JSON.stringify({category_id: category_id.toString(), previous_questions:previousQuestions}),
     }).then(rsp => rsp.json()).then(result => {
       setState({
         ...state,
+        quizCategory: category_id,
         showAnswer: false,
         previousQuestions: previousQuestions,
         currentQuestion: result.question,
@@ -97,16 +98,13 @@ const QuizView: React.FC<RouteComponentProps> = (props) => {
         <div className="choose-header">Choose Category</div>
         <div className="category-holder">
           <div className="play-category" onClick={() => selectCategory(0)}>ALL</div>
-          {Object.keys(state.categories).map(Number).map(id => {
-            return (
-              <div
-                key={id}
-                className="play-category"
-                onClick={() => selectCategory(id)}>
-                {state.categories[id]}
-              </div>
-            )
-          })}
+          {state.categories.map(category => <div
+            key={category.id}
+            className="play-category"
+            onClick={() => selectCategory(category.id)}>
+            {category.type}
+          </div>
+          )}
         </div>
       </div>
     )
@@ -134,7 +132,7 @@ const QuizView: React.FC<RouteComponentProps> = (props) => {
         <div className="quiz-question">{state.currentQuestion.question}</div>
         <div className={`${evaluate ? 'correct' : 'wrong'}`}>{evaluate ? "You were correct!" : "You were incorrect"}</div>
         <div className="quiz-answer">{state.currentQuestion.answer}</div>
-        <div className="next-question button" onClick={getNextQuestion}> Next Question </div>
+        <div className="next-question button" onClick={e=> getNextQuestion()}> Next Question </div>
       </div>
     )
   }
@@ -156,7 +154,7 @@ const QuizView: React.FC<RouteComponentProps> = (props) => {
   }
 
 
-  return state.quizCategory
+  return state.currentQuestion.id
     ? renderPlay()
     : renderPrePlay()
 }

@@ -11,7 +11,7 @@ const QuestionView: React.FC<RouteComponentProps> = (props) => {
     questions: [] as questionModel[],
     page: 1,
     totalQuestions: 0,
-    categories: {} as { [key: number]: string },
+    categories: [] as { id: number, type: string }[],
     currentCategory: null,
   })
 
@@ -23,7 +23,8 @@ const QuestionView: React.FC<RouteComponentProps> = (props) => {
         questions: result.questions,
         totalQuestions: result.total_questions,
         categories: result.categories,
-        currentCategory: result.current_category
+        currentCategory: result.current_category,
+        page: result.page
       })
       return;
     }).catch(error => {
@@ -32,7 +33,7 @@ const QuestionView: React.FC<RouteComponentProps> = (props) => {
     })
 
   }
-  
+
   useEffect(getQuestions, [])
 
   const selectPage = (num: number) => {
@@ -70,9 +71,7 @@ const QuestionView: React.FC<RouteComponentProps> = (props) => {
     })
   }
 
-  const submitSearch = (searchTerm: string) => {
-    //TODO: update request URL
-    fetch('/questions', {
+  const submitSearch = (searchTerm: string) => fetch('/questions/search', {
       method: 'POST',
       mode: 'cors',
       credentials: 'include',
@@ -92,8 +91,7 @@ const QuestionView: React.FC<RouteComponentProps> = (props) => {
       alert('Unable to load questions. Please try your request again')
       return;
     })
-  }
-
+    
   const questionAction = (id: number) => (action: string) => {
     if (action === 'DELETE') {
       if (window.confirm('are you sure you want to delete the question?')) {
@@ -113,12 +111,10 @@ const QuestionView: React.FC<RouteComponentProps> = (props) => {
       <div className="categories-list">
         <h2 onClick={() => { getQuestions() }}>Categories</h2>
         <ul>
-          {Object.keys(state.categories).map(Number).map((id) => (
-            <li key={id} onClick={() => { getByCategory(id) }}>
-              {state.categories[id]}
-              <img className="category" src={`${state.categories[id]}.svg`} alt={state.categories[id]} />
-            </li>
-          ))}
+          {state.categories.map(category => <li key={category.id} onClick={() => { getByCategory(category.id) }}>
+            {category.type}
+            <img className="category" src={`${category.type.toLowerCase()}.svg`} alt={category.type} />
+          </li>)}
         </ul>
         <Search submitSearch={submitSearch} />
       </div>
@@ -129,7 +125,7 @@ const QuestionView: React.FC<RouteComponentProps> = (props) => {
             key={q.id}
             question={q.question}
             answer={q.answer}
-            category={state.categories[q.category]}
+            category={state.categories.find(c => c.id == q.category)?.type || ""}
             difficulty={q.difficulty}
             questionAction={questionAction(q.id)}
           />
