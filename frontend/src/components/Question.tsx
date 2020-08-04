@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { RouteComponentProps } from "@reach/router"
-
-import '../stylesheets/Question.css';
+import Recyclebin from "../images/delete.svg"
 
 export type questionModel = {
   id: number, question: string, answer: string, category: number, difficulty: string
@@ -17,21 +16,25 @@ const Question: React.FC<& QuestionComponentProps> = (props) => {
   const [visibleAnswer, setVisibleAnswer] = useState(false)
   const { question, answer, category, difficulty } = props;
   return (
-    <div className="Question-holder">
-      <div className="Question">{question}</div>
-      <div className="Question-status">
-        <img className="category" src={`${category.toLowerCase()}.svg`} alt={category} />
-        <div className="difficulty">Difficulty: {difficulty}</div>
-        <img src="delete.png" className="delete" onClick={() => props.questionAction('DELETE')} alt="Delete"/>
+    <div className="card m-1">
+      <div className="card-body p-3">
+        <div className="card-title">{question}</div>
+        <div className="card-text d-flex align-items-center mb-3">
+          <img src={`${category.toLowerCase()}.svg`} alt={category} style={{ width: 28 }} />
+          <span className="px-3">Difficulty: {difficulty}</span>
+          <button className="btn btn-danger btn-sm rounded-circle p-1" style={{ fontSize: 0 }} onClick={() => props.questionAction('DELETE')}>
+            <img src={Recyclebin} alt="Delete" style={{ width: 16 }} />
+          </button>
+        </div>
+        <div className="row m-0 align-items-center">
+          <button className="btn btn-primary mr-3 mb-2"
+            onClick={() => setVisibleAnswer(!visibleAnswer)}>
+            {visibleAnswer ? 'Hide' : 'Show'} Answer
+        </button>
+          {visibleAnswer && <span className="h5">Answer: {answer}</span>}
+        </div>
 
       </div>
-      <div className="show-answer button"
-        onClick={() => setVisibleAnswer(!visibleAnswer)}>
-        {visibleAnswer ? 'Hide' : 'Show'} Answer
-          </div>
-      {visibleAnswer && <div className="answer-holder">
-        <span>Answer: {answer}</span>
-      </div>}
     </div>
   );
 }

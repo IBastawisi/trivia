@@ -10,7 +10,7 @@ function App() {
   return (
     <div className="App">
       <Header />
-      <Router>
+      <Router className="container-fluid py-3">
         <QuestionView path="/" />
         <FormView path="/add" />
         <QuizView path="/play" />

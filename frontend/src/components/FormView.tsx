@@ -1,12 +1,10 @@
 import React, { useState, useEffect, createRef } from 'react';
 import { RouteComponentProps } from "@reach/router"
 
-import '../stylesheets/FormView.css';
-
 const FormView: React.FC<RouteComponentProps> = (props) => {
 
-  const [categories, setCategories]= useState([] as { id: number, type: string }[])
- 
+  const [categories, setCategories] = useState([] as { id: number, type: string }[])
+
   const [question, setQuestion] = useState({
     question: "",
     answer: "",
@@ -52,20 +50,20 @@ const FormView: React.FC<RouteComponentProps> = (props) => {
   }
 
   return (
-    <div id="add-form">
+    <div className="d-flex flex-column align-items-center">
       <h2>Add a New Trivia Question</h2>
-      <form className="form-view" onSubmit={submitQuestion} ref={formRef}>
-        <label>
+      <form className="col-sm-6" onSubmit={submitQuestion} ref={formRef}>
+        <label className="w-100">
           Question
-            <input type="text" name="question" onChange={handleChange} />
+            <input type="text" name="question" className="form-control mt-2" onChange={handleChange} />
         </label>
-        <label>
+        <label className="w-100">
           Answer
-            <input type="text" name="answer" onChange={handleChange} />
+            <input type="text" name="answer" className="form-control mt-2" onChange={handleChange} />
         </label>
-        <label>
+        <label className="w-100">
           Difficulty
-            <select name="difficulty" onChange={handleChange}>
+            <select name="difficulty" className="form-control mt-2" onChange={handleChange}>
             <option value="1">1</option>
             <option value="2">2</option>
             <option value="3">3</option>
@@ -73,13 +71,13 @@ const FormView: React.FC<RouteComponentProps> = (props) => {
             <option value="5">5</option>
           </select>
         </label>
-        <label>
+        <label className="w-100">
           Category
-          <select name="category" onChange={handleChange}>
+          <select name="category" className="form-control mt-2" onChange={handleChange}>
             {categories.map(category => <option key={category.id} value={category.id}>{category.type}</option>)}
           </select>
         </label>
-        <input type="submit" className="button" value="Submit" />
+        <button type="submit" className="btn btn-outline-success">Submit</button>
       </form>
     </div>
   );

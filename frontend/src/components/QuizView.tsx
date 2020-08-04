@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { RouteComponentProps } from "@reach/router"
-
-import '../stylesheets/QuizView.css';
 import { questionModel } from './Question';
 
 const questionsPerPlay = 5;
 
 const QuizView: React.FC<RouteComponentProps> = (props) => {
   const [state, setState] = useState({
+    playing: false,
+    gameover: false,
     quizCategory: 0,
     previousQuestions: [] as number[],
     showAnswer: false,
@@ -15,7 +15,6 @@ const QuizView: React.FC<RouteComponentProps> = (props) => {
     numCorrect: 0,
     currentQuestion: {} as questionModel,
     guess: '',
-    forceEnd: false
   })
 
   useEffect(() => {
@@ -31,7 +30,7 @@ const QuizView: React.FC<RouteComponentProps> = (props) => {
 
 
   const selectCategory = (id = 0) => {
-    setState({ ...state, quizCategory: id })
+    setState({ ...state, quizCategory: id, playing: true })
     getNextQuestion(id)
   }
 
@@ -43,7 +42,6 @@ const QuizView: React.FC<RouteComponentProps> = (props) => {
     const previousQuestions = [...state.previousQuestions]
     if (state.currentQuestion.id) { previousQuestions.push(state.currentQuestion.id) }
 
-    //TODO: update request URL
     fetch('/quizzes', {
       method: 'POST',
       mode: 'cors',
@@ -51,7 +49,7 @@ const QuizView: React.FC<RouteComponentProps> = (props) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({category_id: category_id.toString(), previous_questions:previousQuestions}),
+      body: JSON.stringify({ category_id: category_id.toString(), previous_questions: previousQuestions }),
     }).then(rsp => rsp.json()).then(result => {
       setState({
         ...state,
@@ -60,7 +58,8 @@ const QuizView: React.FC<RouteComponentProps> = (props) => {
         previousQuestions: previousQuestions,
         currentQuestion: result.question,
         guess: '',
-        forceEnd: result.question ? false : true
+        playing: true,
+        gameover: result.question ? false : true
       })
       return;
     }).catch(error => {
@@ -82,29 +81,27 @@ const QuizView: React.FC<RouteComponentProps> = (props) => {
   const restartGame = () => {
     setState({
       ...state,
+      playing: false,
+      gameover: false,
       quizCategory: 0,
       previousQuestions: [],
       showAnswer: false,
       numCorrect: 0,
       currentQuestion: {} as questionModel,
       guess: '',
-      forceEnd: false
     })
   }
 
   const renderPrePlay = () => {
     return (
-      <div className="quiz-play-holder">
-        <div className="choose-header">Choose Category</div>
-        <div className="category-holder">
-          <div className="play-category" onClick={() => selectCategory(0)}>ALL</div>
-          {state.categories.map(category => <div
-            key={category.id}
-            className="play-category"
-            onClick={() => selectCategory(category.id)}>
-            {category.type}
-          </div>
-          )}
+      <div className="w-75 mx-auto mt-5">
+        <div className="h3 text-center">Choose Category</div>
+        <div className="btn-group-lg btn-group-vertical w-100" style={{ overflow: 'auto' }}>
+          <button className="btn" onClick={() => selectCategory(0)}>ALL</button>
+          {state.categories.map(category => <button key={category.id} className="btn" onClick={() => { selectCategory(category.id) }}>
+            <img src={`${category.type.toLowerCase()}.svg`} alt={category.type} style={{ width: 28 }} />
+            <span className="px-2">{category.type}</span>
+          </button>)}
         </div>
       </div>
     )
@@ -112,9 +109,9 @@ const QuizView: React.FC<RouteComponentProps> = (props) => {
 
   const renderFinalScore = () => {
     return (
-      <div className="quiz-play-holder">
-        <div className="final-header"> Your Final Score is {state.numCorrect}</div>
-        <div className="play-again button" onClick={restartGame}> Play Again? </div>
+      <div className="w-75 mx-auto mt-5 text-center">
+        <div className="h3 mb-3"> Your Final Score is {state.numCorrect}</div>
+        <button className="btn btn-primary" onClick={restartGame}> Play Again? </button>
       </div>
     )
   }
@@ -122,39 +119,41 @@ const QuizView: React.FC<RouteComponentProps> = (props) => {
   const evaluateAnswer = () => {
     const formatGuess = state.guess.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").toLowerCase()
     const answerArray = state.currentQuestion.answer.toLowerCase().split(' ');
-    return answerArray.includes(formatGuess)
+    return formatGuess == state.currentQuestion.answer.toLowerCase() || answerArray.includes(formatGuess)
   }
 
   const renderCorrectAnswer = () => {
     let evaluate = evaluateAnswer()
     return (
-      <div className="quiz-play-holder">
-        <div className="quiz-question">{state.currentQuestion.question}</div>
-        <div className={`${evaluate ? 'correct' : 'wrong'}`}>{evaluate ? "You were correct!" : "You were incorrect"}</div>
-        <div className="quiz-answer">{state.currentQuestion.answer}</div>
-        <div className="next-question button" onClick={e=> getNextQuestion()}> Next Question </div>
+      <div className="w-75 mx-auto mt-5">
+        <div className="h5">{state.currentQuestion.question}</div>
+        <div className={`alert alert-${evaluate ? 'success' : 'danger'}`}>{evaluate ? "You were correct!" : "You were incorrect"}
+          <br/>
+          {`${state.currentQuestion.answer} is the correct answer`}
+        </div>
+        <button className="btn btn-primary" onClick={e => getNextQuestion()}> Next Question </button>
       </div>
     )
   }
 
   const renderPlay = () => {
-    return state.previousQuestions.length === questionsPerPlay || state.forceEnd
+    return state.previousQuestions.length === questionsPerPlay || state.gameover
       ? renderFinalScore()
       : state.showAnswer
         ? renderCorrectAnswer()
         : (
-          <div className="quiz-play-holder">
-            <div className="quiz-question">{state.currentQuestion.question}</div>
-            <form onSubmit={submitGuess}>
-              <input type="text" name="guess" onChange={handleChange} />
-              <input className="submit-guess button" type="submit" value="Submit Answer" />
+          <div className="w-75 mx-auto mt-5">
+            <div className="h5">{state.currentQuestion.question}</div>
+            <form className="form-inline flex-nowrap my-2" onSubmit={submitGuess}>
+              <input type="text" name="guess" className="form-control w-100 flex-grow-1" onChange={handleChange} />
+              <button type="submit" className="btn btn-outline-success flex-shrink-0">Submit Answer</button>
             </form>
           </div>
         )
   }
 
 
-  return state.currentQuestion.id
+  return state.playing
     ? renderPlay()
     : renderPrePlay()
 }

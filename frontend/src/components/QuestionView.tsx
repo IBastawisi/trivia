@@ -4,8 +4,6 @@ import { RouteComponentProps } from "@reach/router"
 import Question, { questionModel } from './Question';
 import Search from './Search';
 
-import '../stylesheets/App.css';
-
 const QuestionView: React.FC<RouteComponentProps> = (props) => {
   const [state, setState] = useState({
     questions: [] as questionModel[],
@@ -46,11 +44,10 @@ const QuestionView: React.FC<RouteComponentProps> = (props) => {
     let maxPage = Math.ceil(state.totalQuestions / 10)
     for (let i = 1; i <= maxPage; i++) {
       pageNumbers.push(
-        <span
-          key={i}
-          className={`page-num ${i === state.page ? 'active' : ''}`}
-          onClick={() => { selectPage(i) }}>{i}
-        </span>)
+        <li key={i} className={`page-item ${i === state.page ? 'active' : ''}`}>
+          <button className="page-link" onClick={() => { selectPage(i) }}>{i}</button>
+        </li>
+        )
     }
     return pageNumbers;
   }
@@ -107,18 +104,18 @@ const QuestionView: React.FC<RouteComponentProps> = (props) => {
   }
 
   return (
-    <div className="question-view">
-      <div className="categories-list">
+    <div className="row align-items-start">
+      <div className="col-sm-4 col-lg-3 sticky-sm-top">
         <h2 onClick={() => { getQuestions() }}>Categories</h2>
-        <ul>
-          {state.categories.map(category => <li key={category.id} onClick={() => { getByCategory(category.id) }}>
-            {category.type}
-            <img className="category" src={`${category.type.toLowerCase()}.svg`} alt={category.type} />
-          </li>)}
-        </ul>
+        <div className="flex-row justify-content-start flex-sm-column btn-group-lg btn-group-vertical w-100" style={{overflow: 'auto'}}>
+          {state.categories.map(category => <button key={category.id} className="btn" onClick={() => { getByCategory(category.id) }}>
+            <img src={`${category.type.toLowerCase()}.svg`} alt={category.type} style={{ width: 28 }}/>
+            <span className="px-1">{category.type}</span>
+          </button>)}
+        </div>
         <Search submitSearch={submitSearch} />
       </div>
-      <div className="questions-list">
+      <div className="col">
         <h2>Questions</h2>
         {state.questions.map((q, ind) => (
           <Question
@@ -130,9 +127,9 @@ const QuestionView: React.FC<RouteComponentProps> = (props) => {
             questionAction={questionAction(q.id)}
           />
         ))}
-        <div className="pagination-menu">
+        <ul className="pagination justify-content-center">
           {createPagination()}
-        </div>
+        </ul>
       </div>
 
     </div>

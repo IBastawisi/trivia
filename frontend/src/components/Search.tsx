@@ -10,12 +10,12 @@ const Search: React.FC<RouteComponentProps & { submitSearch(searchTerm: string):
   }
 
   return (
-    <form onSubmit={getInfo}>
-      <input
+    <form className="form-inline flex-nowrap my-2" onSubmit={getInfo}>
+      <input className="form-control w-100 flex-grow-1"
         placeholder="Search questions..."
         onChange={e => setQuery(e.target.value)}
       />
-      <input type="submit" value="Submit" className="button" />
+      <button type="submit" className="btn btn-outline-success flex-shrink-0">Submit</button>
     </form>
   )
 }
