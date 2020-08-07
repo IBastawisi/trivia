@@ -78,7 +78,7 @@ def create_app(test_config=None):
                 abort(404)
 
             question.delete()
-            selection = question.query.order_by(question.id).all()
+            selection = Question.query.order_by(Question.id).all()
             current_questions = paginate_questions(request, selection)
 
             return jsonify({
@@ -117,15 +117,19 @@ def create_app(test_config=None):
     @app.route('/questions/search', methods=['POST'])
     def search_questions():
         body = request.get_json()
-        searchTerm = body.get("searchTerm")
-        questions = Question.query.filter(Question.question.ilike(
-            f"%{searchTerm}%")).order_by(Question.id).limit(10).all()
-        return jsonify({
-            'success': True,
-            'questions': [question.as_dict() for question in questions],
-            'total_questions': len(questions),
-            'current_category': 0,
-        })
+
+        try:
+            searchTerm = body.get("searchTerm")
+            questions = Question.query.filter(Question.question.ilike(
+                f"%{searchTerm}%")).order_by(Question.id).limit(10).all()
+            return jsonify({
+                'success': True,
+                'questions': [question.as_dict() for question in questions],
+                'total_questions': len(questions),
+                'current_category': 0,
+            })
+        except:
+            abort(422)
 
     # GET endpoint to get questions based on category.
     @app.route('/categories/<category_id>/questions')
@@ -156,18 +160,24 @@ def create_app(test_config=None):
         category_id = body.get("category_id")
         previous_questions = body.get("previous_questions")
 
-        if category_id == '0':
-            question = Question.query.filter(Question.id.notin_(previous_questions)).order_by(func.random()).first()
-        else:
-            question = Question.query.filter(
-                Question.category == category_id, Question.id.notin_(previous_questions)).order_by(func.random()).first()
+        try:
+            if category_id == '0':
+                question = Question.query.filter(Question.id.notin_(
+                    previous_questions)).order_by(func.random()).first()
+            else:
+                question = Question.query.filter(
+                    Question.category == category_id, Question.id.notin_(previous_questions)).order_by(func.random()).first()
 
-        if question is not None:
-            question = question.as_dict()
-        return jsonify({
-            'success': True,
-            'question': question
-        })
+            if question is not None:
+                question = question.as_dict()
+            return jsonify({
+                'success': True,
+                'question': question
+            })
+        
+        except:
+            abort(422)
+
 
     # Error handlers for all expected errors
     @app.errorhandler(404)
