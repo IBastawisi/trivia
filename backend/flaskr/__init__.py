@@ -135,30 +135,38 @@ def create_app(test_config=None):
     @app.route('/categories/<category_id>/questions')
     def retrieve_category_questions(category_id):
         page = request.args.get('page', 1, type=int)
-        selection = Question.query.filter(
-            Question.category == category_id).order_by(Question.id).all()
-        current_questions = paginate_questions(request, selection)
 
-        categories = Category.query.all()
+        try:
+            if category_id == '0':
+                selection = Question.query.order_by(Question.id).all()
+            else:
+                selection = Question.query.filter(
+                    Question.category == category_id).order_by(Question.id).all()
 
-        if len(current_questions) == 0:
-            abort(404)
+            current_questions = paginate_questions(request, selection)
 
-        return jsonify({
-            'success': True,
-            'questions': current_questions,
-            'total_questions': len(selection),
-            'categories': [category.as_dict() for category in categories],
-            'current_category': category_id,
-            'page': page
-        })
+            categories = Category.query.all()
+
+            if len(current_questions) == 0:
+                abort(404)
+
+            return jsonify({
+                'success': True,
+                'questions': current_questions,
+                'total_questions': len(selection),
+                'categories': [category.as_dict() for category in categories],
+                'current_category': category_id,
+                'page': page
+            })
+        except:
+            abort(422)
 
     # POST endpoint to get questions to play the quiz.
     @app.route('/quizzes', methods=['POST'])
     def get_quizze():
         body = request.get_json()
-        category_id = body.get("category_id")
-        previous_questions = body.get("previous_questions")
+        category_id = body.get("category_id") or '0'
+        previous_questions = body.get("previous_questions") or []
 
         try:
             if category_id == '0':

@@ -108,6 +108,7 @@ const QuestionView: React.FC<RouteComponentProps> = (props) => {
       <div className="col-sm-4 col-lg-3 sticky-sm-top">
         <h2 onClick={() => { getQuestions() }}>Categories</h2>
         <div className="flex-row justify-content-start flex-sm-column btn-group-lg btn-group-vertical w-100" style={{overflow: 'auto'}}>
+          <button className="btn" onClick={() => getByCategory(0)}>ALL</button>
           {state.categories.map(category => <button key={category.id} className="btn" onClick={() => { getByCategory(category.id) }}>
             <img src={`${category.type.toLowerCase()}.svg`} alt={category.type} style={{ width: 28 }}/>
             <span className="px-1">{category.type}</span>
@@ -116,7 +117,7 @@ const QuestionView: React.FC<RouteComponentProps> = (props) => {
         <Search submitSearch={submitSearch} />
       </div>
       <div className="col">
-        <h2>Questions</h2>
+        <h2>{state.categories.find(c => c.id == state.currentCategory)?.type || "All"} Questions</h2>
         {state.questions.map((q, ind) => (
           <Question
             key={q.id}
