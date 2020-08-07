@@ -47,7 +47,7 @@ const QuestionView: React.FC<RouteComponentProps> = (props) => {
         <li key={i} className={`page-item ${i === state.page ? 'active' : ''}`}>
           <button className="page-link" onClick={() => { selectPage(i) }}>{i}</button>
         </li>
-        )
+      )
     }
     return pageNumbers;
   }
@@ -69,26 +69,26 @@ const QuestionView: React.FC<RouteComponentProps> = (props) => {
   }
 
   const submitSearch = (searchTerm: string) => fetch('/questions/search', {
-      method: 'POST',
-      mode: 'cors',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ searchTerm: searchTerm }),
-    }).then(rsp => rsp.json()).then(result => {
-      setState({
-        ...state,
-        questions: result.questions,
-        totalQuestions: result.total_questions,
-        currentCategory: result.current_category
-      })
-      return;
-    }).catch(error => {
-      alert('Unable to load questions. Please try your request again')
-      return;
+    method: 'POST',
+    mode: 'cors',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ searchTerm: searchTerm }),
+  }).then(rsp => rsp.json()).then(result => {
+    setState({
+      ...state,
+      questions: result.questions,
+      totalQuestions: result.total_questions,
+      currentCategory: result.current_category
     })
-    
+    return;
+  }).catch(error => {
+    alert('Unable to load questions. Please try your request again')
+    return;
+  })
+
   const questionAction = (id: number) => (action: string) => {
     if (action === 'DELETE') {
       if (window.confirm('are you sure you want to delete the question?')) {
@@ -107,10 +107,10 @@ const QuestionView: React.FC<RouteComponentProps> = (props) => {
     <div className="row align-items-start">
       <div className="col-sm-4 col-lg-3 sticky-sm-top">
         <h2 onClick={() => { getQuestions() }}>Categories</h2>
-        <div className="flex-row justify-content-start flex-sm-column btn-group-lg btn-group-vertical w-100" style={{overflow: 'auto'}}>
-          <button className="btn" onClick={() => getByCategory(0)}>ALL</button>
-          {state.categories.map(category => <button key={category.id} className="btn" onClick={() => { getByCategory(category.id) }}>
-            <img src={`${category.type.toLowerCase()}.svg`} alt={category.type} style={{ width: 28 }}/>
+        <div className="flex-row justify-content-start align-items-stretch flex-sm-column btn-group-lg btn-group-vertical w-100" style={{ overflow: 'auto' }}>
+          <button className={`${state.currentCategory == 0 ? 'btn btn-secondary' : 'btn'}`} onClick={() => getByCategory(0)}>ALL</button>
+          {state.categories.map(category => <button key={category.id} className={`${state.currentCategory == category.id ? 'btn btn-secondary' : 'btn'}`} onClick={() => { getByCategory(category.id) }}>
+            <img src={`${category.type.toLowerCase()}.svg`} alt={category.type} style={{ width: 28 }} />
             <span className="px-1">{category.type}</span>
           </button>)}
         </div>
