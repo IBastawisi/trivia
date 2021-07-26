@@ -1,14 +1,11 @@
 import os
-from flask import Flask, request, abort, jsonify
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, request, abort, jsonify, send_from_directory
 from sqlalchemy import func
 from flask_cors import CORS
-import random
 
 from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
-
 
 def paginate_questions(request, selection):
     page = request.args.get('page', 1, type=int)
@@ -23,9 +20,9 @@ def paginate_questions(request, selection):
 
 def create_app(test_config=None):
     # create and configure the app
-    app = Flask(__name__)
+    app = Flask(__name__, static_url_path='', static_folder='client/build')
     setup_db(app)
-
+    
     # Set up CORS.
     CORS(app)
 
@@ -186,6 +183,10 @@ def create_app(test_config=None):
         except:
             abort(422)
 
+
+    @app.route("/", defaults={'path':''})
+    def serve(path):
+        return send_from_directory(app.static_folder, 'index.html')
 
     # Error handlers for all expected errors
     @app.errorhandler(404)
