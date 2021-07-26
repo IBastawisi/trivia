@@ -219,14 +219,5 @@ def create_app(test_config=None):
 # Launch.
 #----------------------------------------------------------------------------#
 
-# Default port:
-if __name__ == '__main__':
-    app = create_app()
-    app.run()
-
-# Or specify port manually:
-'''
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
-'''
+app = create_app()
+app.run()
