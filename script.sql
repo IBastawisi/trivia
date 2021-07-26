@@ -9,7 +9,7 @@ VALUES
 	("6", "Sports");
 
 INSERT INTO
-    questions
+    questions (id, question, answer, difficulty, category)
 VALUES
     ("5", "Whose autobiography is entitled 'I Know Why the Caged Bird Sings'?", "Maya Angelou", "2", "4"),
     ("9", "What boxer's original name is Cassius Clay?", "Muhammad Ali", "1", "4"),
